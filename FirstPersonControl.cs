@@ -81,7 +81,7 @@ namespace IrregularZ
                 _yaw += 0.01f * (_lastMouseXPos - x);
                 _pitch += 0.01f * (_lastMouseYPos - y);
                 _pitch = Math.Clamp(_pitch, -1.56f, 1.56f);
-                _lookAt = new Vector3(0, 0, 1) * (Matrix4x4.CreateRotationY(_yaw) * Matrix4x4.CreateRotationX(_pitch));
+                _lookAt = Matrix4.CreateRotationY(_yaw) * Matrix4.CreateRotationX(_pitch) * new Vector3(0, 0, 1);
             }
 
             _lastMouseXPos = x;

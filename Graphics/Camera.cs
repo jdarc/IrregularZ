@@ -20,18 +20,12 @@
 
         public Vector3 Target { get; private set; } = new Vector3(0, 0, 0);
 
-        public Matrix4x4 ViewMatrix => Matrix4x4.CreateLookAt(Position, Target, UpVector);
+        public Matrix4 ViewMatrix => Matrix4.CreateLookAt(Position, Target, UpVector);
 
-        public Matrix4x4 ProjectionMatrix => Matrix4x4.CreatePerspectiveFov(_fov, _aspectRatio, _near, _far);
+        public Matrix4 ProjectionMatrix => Matrix4.CreatePerspectiveFov(_fov, _aspectRatio, _near, _far);
 
-        public void MoveTo(float x, float y, float z)
-        {
-            Position = new Vector3(x, y, z);
-        }
+        public void MoveTo(float x, float y, float z) => Position = new Vector3(x, y, z);
 
-        public void LookAt(float x, float y, float z)
-        {
-            Target = new Vector3(x, y, z);
-        }
+        public void LookAt(float x, float y, float z) => Target = new Vector3(x, y, z);
     }
 }

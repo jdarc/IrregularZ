@@ -4,26 +4,26 @@ namespace IrregularZ.Graphics
 {
     internal struct Edge
     {
-        public int y;
-        public int height;
+        public int Y;
+        public int Height;
         public float X;
         public float Z;
         public float XStep;
         public float ZStep;
 
-        public int Configure(ref Tuple3 va, ref Tuple3 vb, ref Gradients gradients)
+        public int Configure(in Vector3 a, in Vector3 b, in Gradients g)
         {
-            y = (int) MathF.Ceiling(va.Y);
-            height = (int) MathF.Ceiling(vb.Y) - y;
+            Y = (int) MathF.Ceiling(a.Y);
+            Height = (int) MathF.Ceiling(b.Y) - Y;
 
-            XStep = (vb.X - va.X) / (vb.Y - va.Y);
-            ZStep = XStep * gradients.dZdX + gradients.dZdY;
+            XStep = (b.X - a.X) / (b.Y - a.Y);
+            ZStep = XStep * g.dZdX + g.dZdY;
 
-            Z = y - va.Y;
-            X = XStep * Z + va.X;
-            Z = Z * gradients.dZdY + (X - va.X) * gradients.dZdX + va.Z;
+            Z = Y - a.Y;
+            X = XStep * Z + a.X;
+            Z = Z * g.dZdY + (X - a.X) * g.dZdX + a.Z;
 
-            return height;
+            return Height;
         }
     }
 }

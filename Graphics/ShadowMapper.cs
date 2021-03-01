@@ -12,42 +12,38 @@ namespace IrregularZ.Graphics
         private readonly Grid _grid;
         private readonly int _size;
         private readonly Camera _vantage;
-        private Matrix4x4 _combMatrix;
+        private Matrix4 _combMatrix;
         private byte[] _shadowBits = new byte[4];
-        private Tuple3[] _transformed = new Tuple3[16];
-        private readonly Matrix4x4 _viewportMatrix;
-        private Matrix4x4 _worldMatrix;
+        private Vector3[] _transformed = new Vector3[16];
+        private readonly Matrix4 _viewportMatrix;
+        private Matrix4 _worldMatrix;
 
         public ShadowMapper(int size)
         {
             _vantage = new Camera((float) Math.PI / 4.0f, 1, 1, 1f, 10000f);
             _size = size;
-            _viewportMatrix = Matrix4x4.CreateViewportMatrix(size, size);
+            _viewportMatrix = Matrix4.CreateViewportMatrix(size, size);
             _grid = new Grid(size);
             Clipping = true;
         }
 
-        public Frustum Frustum { get; set; }
+        public Clipper Clipper { get; set; }
         public bool Clipping { get; set; }
         public Color Material { get; set; }
 
-        public void Dispose()
-        {
-        }
-
-        public Matrix4x4 WorldMatrix
+        public Matrix4 WorldMatrix
         {
             get => _worldMatrix;
             set => _worldMatrix = value;
         }
 
-        public Matrix4x4 ViewMatrix
+        public Matrix4 ViewMatrix
         {
             get => _vantage.ViewMatrix;
             set { }
         }
 
-        public Matrix4x4 ProjectionMatrix
+        public Matrix4 ProjectionMatrix
         {
             get => _vantage.ProjectionMatrix;
             set { }
@@ -56,7 +52,7 @@ namespace IrregularZ.Graphics
         public void Render(float[] vertexBuffer, int[] indexBuffer)
         {
             var triangleCount = indexBuffer.Length / 3;
-            if (_transformed.Length < vertexBuffer.Length) _transformed = new Tuple3[vertexBuffer.Length];
+            if (_transformed.Length < vertexBuffer.Length) _transformed = new Vector3[vertexBuffer.Length];
 
             var e11 = _combMatrix.M11 * _worldMatrix.M11 + _combMatrix.M12 * _worldMatrix.M21 +
                       _combMatrix.M13 * _worldMatrix.M31 +
@@ -109,7 +105,7 @@ namespace IrregularZ.Graphics
 
             Parallel.ForEach(Partitioner.Create(0, vertexBuffer.Length / 3), (range, state) =>
             {
-                fixed (Tuple3* dst = _transformed)
+                fixed (Vector3* dst = _transformed)
                 {
                     for (var i = range.Item1; i < range.Item2; ++i)
                     {
@@ -118,9 +114,9 @@ namespace IrregularZ.Graphics
                         var sZ = vertexBuffer[i * 3 + 2];
                         var t = dst + i;
                         var w = 1F / (e41 * sX + e42 * sY + e43 * sZ + e44);
-                        t->X = (e11 * sX + e12 * sY + e13 * sZ + e14) * w;
-                        t->Y = (e21 * sX + e22 * sY + e23 * sZ + e24) * w;
-                        t->Z = e31 * sX + e32 * sY + e33 * sZ + e34;
+                        *t = new Vector3((e11 * sX + e12 * sY + e13 * sZ + e14) * w,
+                        (e21 * sX + e22 * sY + e23 * sZ + e24) * w,
+                        e31 * sX + e32 * sY + e33 * sZ + e34);
                     }
                 }
             });
@@ -131,7 +127,7 @@ namespace IrregularZ.Graphics
                 {
                     fixed (int* ix = indexBuffer)
                     {
-                        fixed (Tuple3* dst = _transformed)
+                        fixed (Vector3* dst = _transformed)
                         {
                             for (var i = range.Item1; i < range.Item2; i++)
                             {
@@ -218,7 +214,7 @@ namespace IrregularZ.Graphics
         }
 
         public void Shadow(Scene.Scene scene, FrameBuffer<int> colorBuffer, FrameBuffer<float> depthBuffer,
-            Matrix4x4 combMatrix)
+                           Matrix4 combMatrix)
         {
             var watch = new Stopwatch();
 
@@ -270,10 +266,10 @@ namespace IrregularZ.Graphics
                 }
         }
 
-        private void SpatialAcceleration(FrameBuffer<float> depthBuffer, Matrix4x4 mcombMatrix)
+        private void SpatialAcceleration(FrameBuffer<float> depthBuffer, Matrix4 mcombMatrix)
         {
             _combMatrix = _viewportMatrix * _vantage.ProjectionMatrix * _vantage.ViewMatrix;
-            mcombMatrix = Matrix4x4.Invert(mcombMatrix);
+            mcombMatrix = Matrix4.Invert(mcombMatrix);
             var mem = 0;
             fixed (float* zbPtr = depthBuffer.Data)
             {

@@ -51,7 +51,7 @@ namespace IrregularZ.Graphics
             Aggregate(other._maxX, other._maxY, other._maxZ);
         }
 
-        public void Aggregate(Aabb source, in Matrix4x4 matrix)
+        public void Aggregate(Aabb source, in Matrix4 matrix)
         {
             Aggregate(source._minX, source._maxY, source._minZ, matrix);
             Aggregate(source._maxX, source._maxY, source._minZ, matrix);
@@ -63,7 +63,7 @@ namespace IrregularZ.Graphics
             Aggregate(source._minX, source._minY, source._maxZ, matrix);
         }
 
-        private void Aggregate(float x, float y, float z, in Matrix4x4 m)
+        private void Aggregate(float x, float y, float z, in Matrix4 m)
         {
             var bx = m.M11 * x + m.M12 * y + m.M13 * z + m.M14;
             var by = m.M21 * x + m.M22 * y + m.M23 * z + m.M24;

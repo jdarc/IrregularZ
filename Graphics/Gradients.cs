@@ -1,11 +1,11 @@
 namespace IrregularZ.Graphics
 {
-    public class Gradients
+    public readonly struct Gradients
     {
-        public float dZdX;
-        public float dZdY;
+        public readonly float dZdX;
+        public readonly float dZdY;
 
-        public Gradients(ref Tuple3 s0, ref Tuple3 s1, ref Tuple3 s2)
+        public Gradients(in Vector3 s0, in Vector3 s1, in Vector3 s2)
         {
             var ax = s0.X - s2.X;
             var ay = s0.Y - s2.Y;

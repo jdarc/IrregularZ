@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace IrregularZ.Scene
 {
@@ -18,12 +19,14 @@ namespace IrregularZ.Scene
             foreach (var node in _nodes) Bounds.Aggregate(node.Bounds);
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public override void TraverseUp(Func<Node, bool> visitor)
         {
             _nodes.TraverseUp(visitor);
             visitor(this);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public override void TraverseDown(Func<Node, bool> visitor)
         {
             if (visitor(this)) _nodes.TraverseDown(visitor);
@@ -75,8 +78,10 @@ namespace IrregularZ.Scene
 
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+            [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
             public void TraverseUp(Func<Node, bool> visitor) => _childNodes.ForEach(node => node.TraverseUp(visitor));
 
+            [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
             public void TraverseDown(Func<Node, bool> visitor) => _childNodes.ForEach(node => node.TraverseDown(visitor));
         }
     }

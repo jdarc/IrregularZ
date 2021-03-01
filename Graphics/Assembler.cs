@@ -6,11 +6,11 @@ namespace IrregularZ.Graphics
     public class Assembler
     {
         private readonly List<Triangle> _triangles;
-        private readonly List<Tuple3> _vertices;
+        private readonly List<Vector3> _vertices;
 
         public Assembler()
         {
-            _vertices = new List<Tuple3>();
+            _vertices = new List<Vector3>();
             _triangles = new List<Triangle>();
         }
 
@@ -18,7 +18,7 @@ namespace IrregularZ.Graphics
 
         public void AddVertex(float x, float y, float z)
         {
-            _vertices.Add(new Tuple3(x, y, z));
+            _vertices.Add(new Vector3(x, y, z));
         }
 
         public void CreateTriangle(int a, int b, int c)
@@ -41,7 +41,7 @@ namespace IrregularZ.Graphics
             {
                 var elementCount = triangles.Count * 3;
                 var ib = new int[elementCount];
-                var vb1 = new Tuple3[elementCount];
+                var vb1 = new Vector3[elementCount];
                 var idx = 0;
                 foreach (var triangle2 in triangles)
                 {
@@ -61,9 +61,9 @@ namespace IrregularZ.Graphics
             return new Model(meshByMaterial);
         }
 
-        private static Mesh Optimize(IReadOnlyList<Tuple3> vertices, IReadOnlyList<int> indices)
+        private static Mesh Optimize(IReadOnlyList<Vector3> vertices, IReadOnlyList<int> indices)
         {
-            var vertexMap = new Dictionary<Tuple3, int>();
+            var vertexMap = new Dictionary<Vector3, int>();
             var optTriangles = new int[indices.Count];
             for (var i = 0; i < indices.Count; i++)
             {
@@ -72,7 +72,7 @@ namespace IrregularZ.Graphics
                 optTriangles[i] = vertexMap[va];
             }
 
-            var optVertices = new Tuple3[vertexMap.Count];
+            var optVertices = new Vector3[vertexMap.Count];
             vertexMap.Keys.CopyTo(optVertices, 0);
 
             var vertexBuffer = new List<float>();

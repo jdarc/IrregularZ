@@ -1,4 +1,6 @@
-﻿namespace IrregularZ.Graphics
+﻿using System.Runtime.CompilerServices;
+
+namespace IrregularZ.Graphics
 {
     public struct Frustum
     {
@@ -9,7 +11,8 @@
         public Plane Top;
         public Plane Bottom;
 
-        public Frustum(Matrix4x4 view, Matrix4x4 proj)
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
+        public Frustum(Matrix4 view, Matrix4 proj)
         {
             var mat = proj * view;
             Left = Plane.Create(-mat.M41 - mat.M11, -mat.M42 - mat.M12, -mat.M43 - mat.M13, mat.M44 + mat.M14);
@@ -20,6 +23,7 @@
             Far = Plane.Create(-mat.M41 + mat.M31, -mat.M42 + mat.M32, -mat.M43 + mat.M33, mat.M44 - mat.M34);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public Containment Evaluate(Aabb aabb)
         {
             var vc0 = aabb.Evaluate(Near);

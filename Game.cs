@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using IrregularZ.Graphics;
 using IrregularZ.Import;
 using IrregularZ.Scene;
@@ -26,8 +27,8 @@ namespace IrregularZ
 
         public Game()
         {
-            var screenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / 2;
-            var screenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / 2;
+            var screenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width ;
+            var screenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height ;
             _graphics = new GraphicsDeviceManager(this)
             {
                 PreferredBackBufferWidth = screenWidth,
@@ -76,26 +77,26 @@ namespace IrregularZ
                         {
                             new LeafNode
                             {
-                                LocalTransform = Matrix4x4.CreateTranslation(0, -5, 0) * Matrix4x4.CreateScale(50, 50, 50),
+                                LocalTransform = Matrix4.CreateTranslation(0, -5, 0) * Matrix4.CreateScale(50, 50, 50),
                                 Geometry = planeMesh
                             },
                             new BranchNode
                             {
                                 Nodes =
                                 {
-                                    new LeafNode {LocalTransform = Matrix4x4.CreateScale(10, 10, 10), Geometry = gruntMesh},
+                                    new LeafNode {LocalTransform = Matrix4.CreateScale(10, 10, 10), Geometry = gruntMesh},
                                     new LeafNode
                                     {
                                         LocalTransform =
-                                            Matrix4x4.CreateTranslation(-2, 0, 7) * Matrix4x4.CreateScale(10, 10, 10) *
-                                            Matrix4x4.CreateRotationY(4.6F),
+                                            Matrix4.CreateTranslation(-2, 0, 7) * Matrix4.CreateScale(10, 10, 10) *
+                                            Matrix4.CreateRotationY(4.6F),
                                         Geometry = dinoMesh
                                     },
                                     new LeafNode
                                     {
                                         LocalTransform =
-                                            Matrix4x4.CreateTranslation(7, 0, 3) * Matrix4x4.CreateScale(10, 10, 10) *
-                                            Matrix4x4.CreateRotationY(2.3F),
+                                            Matrix4.CreateTranslation(7, 0, 3) * Matrix4.CreateScale(10, 10, 10) *
+                                            Matrix4.CreateRotationY(2.3F),
                                         Geometry = gruntMesh
                                     }
                                 }
@@ -163,7 +164,7 @@ namespace IrregularZ
 
             _angle += 0.001f;
 
-            var light = new Vector3(10, 50, -70) * Matrix4x4.CreateRotationY(_angle);
+            var light = Matrix4.CreateRotationY(_angle) * new Vector3(10, 50, -70);
             _shadowMapper.MoveTo(light.X, light.Y, light.Z);
             _shadowMapper.LookAt(0, 0, 0);
 
@@ -172,15 +173,19 @@ namespace IrregularZ
             base.Update(gameTime);
         }
 
+        private Stopwatch watch = new Stopwatch();
         protected override void Draw(GameTime gameTime)
         {
             _renderer.ViewMatrix = _camera.ViewMatrix;
             _renderer.ProjectionMatrix = _camera.ProjectionMatrix;
-            _renderer.Clear(0x5599FF, float.PositiveInfinity);
+            _renderer.Clear(0x5599FF);
             _scene.Render(_renderer, new Frustum(_camera.ViewMatrix, _camera.ProjectionMatrix));
+            
+            watch.Restart();
             var combinedMatrix = _renderer.ViewportMatrix * _renderer.ProjectionMatrix * _renderer.ViewMatrix;
             _shadowMapper.Shadow(_scene, _colorRaster, _depthRaster, combinedMatrix);
-
+            Console.WriteLine(watch.ElapsedMilliseconds);
+            
             _surface.SetData(_colorRaster.Data);
             _spriteBatch.Begin();
             _spriteBatch.Draw(_surface, _graphics.GraphicsDevice.Viewport.Bounds, Color.White);
