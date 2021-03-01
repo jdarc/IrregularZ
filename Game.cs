@@ -1,7 +1,12 @@
 ﻿using System;
+using IrregularZ.Graphics;
+using IrregularZ.Import;
+using IrregularZ.Scene;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Model = IrregularZ.Graphics.Model;
+using Vector3 = IrregularZ.Graphics.Vector3;
 
 namespace IrregularZ
 {
@@ -10,62 +15,58 @@ namespace IrregularZ
         private readonly GraphicsDeviceManager _graphics;
         private float _angle;
         private Camera _camera;
-        private Raster _colorRaster;
-        private Raster _depthRaster;
-        private FpsCamera _fpsCamera;
-        private Scene _scene;
+        private FrameBuffer<int> _colorRaster;
+        private FrameBuffer<float> _depthRaster;
+        private FirstPersonControl _firstPersonControl;
+        private Scene.Scene _scene;
         private ShadowMapper _shadowMapper;
         private SpriteBatch _spriteBatch;
         private Texture2D _surface;
-        private Visualizer _visualizer;
+        private Renderer _renderer;
 
         public Game()
         {
-            var screenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            var screenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            var screenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / 2;
+            var screenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / 2;
             _graphics = new GraphicsDeviceManager(this)
             {
-                PreferredBackBufferWidth = screenWidth >> 1,
-                PreferredBackBufferHeight = screenHeight >> 1
+                PreferredBackBufferWidth = screenWidth,
+                PreferredBackBufferHeight = screenHeight,
+                IsFullScreen = false,
+                SynchronizeWithVerticalRetrace = true
             };
-            _graphics.IsFullScreen = true;
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
         }
 
         protected override void Initialize()
         {
-            _colorRaster = new Raster(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
-            _depthRaster = new Raster(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
-            _visualizer = new Visualizer(_colorRaster, _depthRaster);
+            _colorRaster = new FrameBuffer<int>(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+            _depthRaster = new FrameBuffer<float>(_graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight);
+            _renderer = new Renderer(_colorRaster, _depthRaster);
 
             _camera = new Camera(
-                (float) Math.PI / 4.0f,
+                (float) Math.PI / 4,
                 _graphics.PreferredBackBufferWidth,
-                _graphics.PreferredBackBufferHeight, 1f, 10000f
+                _graphics.PreferredBackBufferHeight, 1, 10000
             );
             _camera.MoveTo(-5, 8, -22);
             _camera.LookAt(0, 0, 0);
 
-            _fpsCamera = new FpsCamera(_camera);
+            _firstPersonControl = new FirstPersonControl(_camera);
 
             _shadowMapper = new ShadowMapper(256);
             _shadowMapper.MoveTo(10, 80, -100);
             _shadowMapper.LookAt(0, 0, 0);
 
-            _visualizer.MoveLight(10, 280, -100);
+            _renderer.MoveLight(10, 280, -100);
 
-            var loader = new ResourceLoader {Path = "Content"};
-            var objMesh = loader.LoadModel("grunt.obj");
-            objMesh.Compile(true);
+            var gruntMesh = ContentLoader.ReadModel("grunt.obj");
+            var dinoMesh = ContentLoader.ReadModel("dinorider.obj");
 
-            IGeometry planeMesh = BuildPlane(new Material
-            {
-                Diffuse = ColorF.FromXyz(0.1f, 0.125f, 0.9f),
-                Ambient = ColorF.FromXyz(0.1f, 0.2f, 0.3f)
-            });
+            var planeMesh = BuildPlane(System.Drawing.Color.Blue);
 
-            _scene = new Scene(new BranchNode
+            _scene = new Scene.Scene(new BranchNode
             {
                 Nodes =
                 {
@@ -75,30 +76,27 @@ namespace IrregularZ
                         {
                             new LeafNode
                             {
-                                LocalTransform = Matrix4F.CreateTranslation(0, -5, 0) * Matrix4F.CreateScaler(50),
+                                LocalTransform = Matrix4x4.CreateTranslation(0, -5, 0) * Matrix4x4.CreateScale(50, 50, 50),
                                 Geometry = planeMesh
                             },
                             new BranchNode
                             {
                                 Nodes =
                                 {
+                                    new LeafNode {LocalTransform = Matrix4x4.CreateScale(10, 10, 10), Geometry = gruntMesh},
                                     new LeafNode
                                     {
-                                        LocalTransform = Matrix4F.CreateScaler(10), Geometry = objMesh
+                                        LocalTransform =
+                                            Matrix4x4.CreateTranslation(-2, 0, 7) * Matrix4x4.CreateScale(10, 10, 10) *
+                                            Matrix4x4.CreateRotationY(4.6F),
+                                        Geometry = dinoMesh
                                     },
                                     new LeafNode
                                     {
                                         LocalTransform =
-                                            Matrix4F.CreateTranslation(-2, 0, 7) * Matrix4F.CreateScaler(10) *
-                                            Matrix4F.CreateRotationAboutY(4.67134f),
-                                        Geometry = objMesh
-                                    },
-                                    new LeafNode
-                                    {
-                                        LocalTransform =
-                                            Matrix4F.CreateTranslation(7, 0, 3) * Matrix4F.CreateScaler(10) *
-                                            Matrix4F.CreateRotationAboutY(2.334f),
-                                        Geometry = objMesh
+                                            Matrix4x4.CreateTranslation(7, 0, 3) * Matrix4x4.CreateScale(10, 10, 10) *
+                                            Matrix4x4.CreateRotationY(2.3F),
+                                        Geometry = gruntMesh
                                     }
                                 }
                             }
@@ -133,60 +131,57 @@ namespace IrregularZ
             var keys = Keyboard.GetState();
 
             if (keys.IsKeyDown(Keys.D))
-                _fpsCamera.KeyDown(Keys.D);
+                _firstPersonControl.KeyDown(Keys.D);
             else
-                _fpsCamera.KeyUp(Keys.D);
+                _firstPersonControl.KeyUp(Keys.D);
 
             if (keys.IsKeyDown(Keys.A))
-                _fpsCamera.KeyDown(Keys.A);
+                _firstPersonControl.KeyDown(Keys.A);
             else
-                _fpsCamera.KeyUp(Keys.A);
+                _firstPersonControl.KeyUp(Keys.A);
 
             if (keys.IsKeyDown(Keys.S))
-                _fpsCamera.KeyDown(Keys.S);
+                _firstPersonControl.KeyDown(Keys.S);
             else
-                _fpsCamera.KeyUp(Keys.S);
+                _firstPersonControl.KeyUp(Keys.S);
 
             if (keys.IsKeyDown(Keys.W))
-                _fpsCamera.KeyDown(Keys.W);
+                _firstPersonControl.KeyDown(Keys.W);
             else
-                _fpsCamera.KeyUp(Keys.W);
+                _firstPersonControl.KeyUp(Keys.W);
 
             var mouseState = Mouse.GetState();
             if (mouseState.LeftButton == ButtonState.Pressed)
-                _fpsCamera.MouseDown();
+                _firstPersonControl.MouseDown();
             else
-                _fpsCamera.MouseUp();
+                _firstPersonControl.MouseUp();
 
-            _fpsCamera.MouseMove(mouseState.X, mouseState.Y);
+            _firstPersonControl.MouseMove(mouseState.X, mouseState.Y);
 
-            _fpsCamera.Update(seconds, 50);
+            _firstPersonControl.Update(seconds, 50);
             _scene.Update(seconds);
 
-            var light = new Vector3F(10, 50, -70);
-
             _angle += 0.001f;
-            var rot = Matrix4F.CreateRotationAboutY(_angle);
 
-            light.Transform(ref rot);
+            var light = new Vector3(10, 50, -70) * Matrix4x4.CreateRotationY(_angle);
             _shadowMapper.MoveTo(light.X, light.Y, light.Z);
             _shadowMapper.LookAt(0, 0, 0);
 
-            _visualizer.MoveLight(light.X, light.Y, light.Z);
+            _renderer.MoveLight(light.X, light.Y, light.Z);
 
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            _visualizer.ViewMatrix = _camera.ViewMatrix;
-            _visualizer.ProjectionMatrix = _camera.ProjectionMatrix;
-            _visualizer.Clear(0x5599FF, float.PositiveInfinity);
-            _scene.Render(_visualizer, _camera.Frustum);
-            _shadowMapper.Shadow(_scene, _colorRaster, _depthRaster, _visualizer.CombinedMatrix);
+            _renderer.ViewMatrix = _camera.ViewMatrix;
+            _renderer.ProjectionMatrix = _camera.ProjectionMatrix;
+            _renderer.Clear(0x5599FF, float.PositiveInfinity);
+            _scene.Render(_renderer, new Frustum(_camera.ViewMatrix, _camera.ProjectionMatrix));
+            var combinedMatrix = _renderer.ViewportMatrix * _renderer.ProjectionMatrix * _renderer.ViewMatrix;
+            _shadowMapper.Shadow(_scene, _colorRaster, _depthRaster, combinedMatrix);
 
-            _colorRaster.ReOrder();
-            _surface.SetData(_colorRaster.Buffer.Data);
+            _surface.SetData(_colorRaster.Data);
             _spriteBatch.Begin();
             _spriteBatch.Draw(_surface, _graphics.GraphicsDevice.Viewport.Bounds, Color.White);
             _spriteBatch.End();
@@ -194,21 +189,16 @@ namespace IrregularZ
             base.Draw(gameTime);
         }
 
-        public static Model BuildPlane(Material material)
+        private static Model BuildPlane(System.Drawing.Color material)
         {
-            var model = new Model();
-
-            model.AddVertex(-1, 0, 1);
-            model.AddVertex(1, 0, 1);
-            model.AddVertex(1, 0, -1);
-            model.AddVertex(-1, 0, -1);
-
-            model.CreateTriangle(0, 1, 2);
-            model.CreateTriangle(2, 3, 0);
-
-            model.ChangeMaterial(material);
-
-            return model.Compile(false);
+            var assembler = new Assembler {Color = material};
+            assembler.AddVertex(-1, 0, 1);
+            assembler.AddVertex(1, 0, 1);
+            assembler.AddVertex(1, 0, -1);
+            assembler.AddVertex(-1, 0, -1);
+            assembler.CreateTriangle(0, 1, 2);
+            assembler.CreateTriangle(2, 3, 0);
+            return assembler.Compile();
         }
     }
 }

@@ -1,41 +1,23 @@
 newmtl Blanket
-Ka 0 0 0
+Ka 0.5 0.5 0.5
 Kd 0.670588 0.639216 0.027451
-Ks 1 1 1
-illum 2
-Ns 78.7932
 
 newmtl Doug
-Ka 0 0 0
+Ka 0.5 0.5 0.5
 Kd 0.423529 0.545098 0.247059
-Ks 1 1 1
-illum 2
-Ns 337.794
 
 newmtl Nails
-Ka 0 0 0
+Ka 0.5 0.5 0.5
 Kd 0.839216 0.870588 0.705882
-Ks 1 1 1
-illum 2
-Ns 337.794
 
 newmtl Teeth
-Ka 0 0 0
+Ka 0.5 0.5 0.5
 Kd 0.839216 0.870588 0.705882
-Ks 1 1 1
-illum 2
-Ns 337.794
 
 newmtl eyes
-Ka 0 0 0
+Ka 0.5 0.5 0.5
 Kd 1 1 1
-Ks 1 1 1
-illum 2
-Ns 337.794
 
 newmtl saddle
-Ka 0 0 0
+Ka 0.5 0.5 0.5
 Kd 0.0705882 0.180392 0.0823529
-Ks 1 1 1
-illum 2
-Ns 337.794
