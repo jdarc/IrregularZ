@@ -4,6 +4,13 @@ Implementation of https://en.wikipedia.org/wiki/Irregular_Z-buffer resulting in
 higher definition shadows with sharp edges compared to classical shadow mapping 
 techniques.
 
+## Running
+
+W, A, S, D keys to move around, drag mouse to look around.
+```
+dotnet run --release
+```
+
 ## License
 The MIT License (MIT)
 
