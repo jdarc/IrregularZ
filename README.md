@@ -6,7 +6,8 @@ techniques.
 
 ## Running
 
-W, A, S, D keys to move around, drag mouse to look around.
+W, A, S, D keys to move around, drag mouse to look around, escape key terminates 
+the application.
 ```
 dotnet run --release
 ```
