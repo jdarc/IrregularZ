@@ -11,10 +11,7 @@ namespace IrregularZ.Graphics
         private float _minY;
         private float _minZ;
 
-        public Aabb()
-        {
-            Reset();
-        }
+        public Aabb() => Reset();
 
         public void Reset()
         {
@@ -22,17 +19,15 @@ namespace IrregularZ.Graphics
             _maxX = _maxY = _maxZ = float.NegativeInfinity;
         }
 
-        public int Evaluate(in Plane plane)
-        {
-            return (plane.Dot(_minX, _maxY, _minZ) > 0F ? 1 : 0) +
-                   (plane.Dot(_maxX, _maxY, _minZ) > 0F ? 1 : 0) +
-                   (plane.Dot(_maxX, _minY, _minZ) > 0F ? 1 : 0) +
-                   (plane.Dot(_minX, _minY, _minZ) > 0F ? 1 : 0) +
-                   (plane.Dot(_minX, _maxY, _maxZ) > 0F ? 1 : 0) +
-                   (plane.Dot(_maxX, _maxY, _maxZ) > 0F ? 1 : 0) +
-                   (plane.Dot(_maxX, _minY, _maxZ) > 0F ? 1 : 0) +
-                   (plane.Dot(_minX, _minY, _maxZ) > 0F ? 1 : 0);
-        }
+        public int Evaluate(in Plane plane) =>
+            (plane.Dot(_minX, _maxY, _minZ) > 0F ? 1 : 0) +
+            (plane.Dot(_maxX, _maxY, _minZ) > 0F ? 1 : 0) +
+            (plane.Dot(_maxX, _minY, _minZ) > 0F ? 1 : 0) +
+            (plane.Dot(_minX, _minY, _minZ) > 0F ? 1 : 0) +
+            (plane.Dot(_minX, _maxY, _maxZ) > 0F ? 1 : 0) +
+            (plane.Dot(_maxX, _maxY, _maxZ) > 0F ? 1 : 0) +
+            (plane.Dot(_maxX, _minY, _maxZ) > 0F ? 1 : 0) +
+            (plane.Dot(_minX, _minY, _maxZ) > 0F ? 1 : 0);
 
         public void Aggregate(float x, float y, float z)
         {

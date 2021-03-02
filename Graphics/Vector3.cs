@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace IrregularZ.Graphics
 {
@@ -28,28 +27,20 @@ namespace IrregularZ.Graphics
 
         public static bool operator !=(in Vector3 a, in Vector3 b) => !a.Equals(b);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator +(in Vector3 a, in Vector3 b) => new Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator -(in Vector3 a, in Vector3 b) => new Vector3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator -(in Vector3 v) => new Vector3(-v.X, -v.Y, -v.Z);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator /(in Vector3 v, in float s) => new Vector3(v.X / s, v.Y / s, v.Z / s);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator /(in float s, in Vector3 v) => v / s;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator *(in Vector3 v, in float s) => new Vector3(v.X * s, v.Y * s, v.Z * s);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator *(in float s, in Vector3 v) => v * s;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator *(in Vector3 a, in Vector3 b)
         {
             var x = a.Y * b.Z - a.Z * b.Y;
@@ -58,7 +49,6 @@ namespace IrregularZ.Graphics
             return new Vector3(x, y, z);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator *(in Matrix4 matrix, in Vector3 position)
         {
             var x = matrix.M11 * position.X + matrix.M12 * position.Y + matrix.M13 * position.Z + matrix.M14;
@@ -67,10 +57,10 @@ namespace IrregularZ.Graphics
             return new Vector3(x, y, z);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static float Dot(in Vector3 a, in Vector3 b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Vector3 Normalize(in Vector3 v) => v / v.Length;
+
+        public override string ToString() => $"{nameof(X)}: {X}, {nameof(Y)}: {Y}, {nameof(Z)}: {Z}";
     }
 }

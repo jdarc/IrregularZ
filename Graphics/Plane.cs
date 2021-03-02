@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace IrregularZ.Graphics
 {
@@ -14,10 +13,8 @@ namespace IrregularZ.Graphics
             Distance = dist;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public float Dot(float x, float y, float z) => Normal.X * x + Normal.Y * y + Normal.Z * z - Distance;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public static Plane Create(float x, float y, float z, float d)
         {
             var invLen = 1F / MathF.Sqrt(x * x + y * y + z * z);

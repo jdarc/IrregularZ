@@ -1,5 +1,3 @@
-using System.Runtime.CompilerServices;
-
 namespace IrregularZ.Graphics
 {
     public sealed class Clipper
@@ -12,7 +10,6 @@ namespace IrregularZ.Graphics
 
         public Clipper(Frustum f) => _planes = new[] {f.Near, f.Far, f.Left, f.Right, f.Top, f.Bottom};
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public unsafe int Clip(in Vector3 v0, in Vector3 v1, in Vector3 v2)
         {
             Result[0] = v0;
@@ -98,28 +95,30 @@ namespace IrregularZ.Graphics
             return aCount;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private int ComputeMask(in Vector3 v0, in Vector3 v1, in Vector3 v2)
         {
             var clipMask = 0;
-            
+
             for (var i = 0; i < _planes.Length; ++i)
             {
                 var p = 0;
                 var mask = 1 << i;
                 if (_planes[i].Dot(v0.X, v0.Y, v0.Z) > 0F)
                 {
-                    ++p; clipMask |= mask;
+                    ++p;
+                    clipMask |= mask;
                 }
 
                 if (_planes[i].Dot(v1.X, v1.Y, v1.Z) > 0F)
                 {
-                    ++p; clipMask |= mask;
+                    ++p;
+                    clipMask |= mask;
                 }
 
                 if (_planes[i].Dot(v2.X, v2.Y, v2.Z) > 0F)
                 {
-                    if (++p == 3) return -1; clipMask |= mask;
+                    if (++p == 3) return -1;
+                    clipMask |= mask;
                 }
             }
 

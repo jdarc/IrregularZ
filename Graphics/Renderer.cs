@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 
 namespace IrregularZ.Graphics
 {
@@ -18,7 +17,6 @@ namespace IrregularZ.Graphics
             _lightDir = new Vector3(0, -1, 0);
         }
 
-
         public Color Material { get; set; }
 
         public Clipper Clipper { get; set; }
@@ -28,7 +26,7 @@ namespace IrregularZ.Graphics
         public Matrix4 ViewMatrix { get; set; }
 
         public Matrix4 ProjectionMatrix { get; set; }
-        
+
         public readonly Matrix4 ViewportMatrix;
 
         public void MoveLight(float x, float y, float z) => _lightDir = Vector3.Normalize(new Vector3(-x, -y, -z));
@@ -39,7 +37,6 @@ namespace IrregularZ.Graphics
             _depthBuffer.Fill(1F);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void Render(float[] vertexBuffer, int[] indexBuffer)
         {
             var matrix = ViewportMatrix * ProjectionMatrix * ViewMatrix;
@@ -58,7 +55,6 @@ namespace IrregularZ.Graphics
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private void Render(in Matrix4 matrix, in Vector3 v0, in Vector3 v1, in Vector3 v2, int color)
         {
             var count = Clipper.Clip(v0, v1, v2);
@@ -69,6 +65,7 @@ namespace IrregularZ.Graphics
                 ScanOrder(Project(matrix, result[0]), Project(matrix, result[1]), Project(matrix, result[2]), color);
                 return;
             }
+
             var p0 = Project(matrix, result[0]);
             var p2 = Project(matrix, result[1]);
             var n = 2;
@@ -80,7 +77,6 @@ namespace IrregularZ.Graphics
             } while (++n < count);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private void ScanOrder(in Vector3 v0, in Vector3 v1, in Vector3 v2, int color)
         {
             var gradients = new Gradients(v0, v1, v2);
@@ -98,7 +94,6 @@ namespace IrregularZ.Graphics
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private void Scan(in Gradients gradients, in Vector3 v0, in Vector3 v1, in Vector3 v2, bool swap, int color)
         {
             var edgeA = new Edge();
@@ -114,7 +109,6 @@ namespace IrregularZ.Graphics
             else Rasterize(gradients, ref edgeA, ref edgeB, edgeB, color);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private void Rasterize(in Gradients gradients, ref Edge left, ref Edge right, in Edge leader, int color)
         {
             var offset = leader.Y * _colorRaster.Width;
@@ -147,7 +141,6 @@ namespace IrregularZ.Graphics
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         private static Vector3 Project(in Matrix4 m, in Vector3 v)
         {
             var x = m.M11 * v.X + m.M12 * v.Y + m.M13 * v.Z + m.M14;
@@ -157,7 +150,6 @@ namespace IrregularZ.Graphics
             return new Vector3(x / w, y / w, z / w);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         private static int ComputeColor(int ka, int kd, Color diffuse)
         {
             var blu = Math.Clamp((ka * diffuse.B + kd * diffuse.B) >> 8, 0, 255) << 0x10;
@@ -166,7 +158,6 @@ namespace IrregularZ.Graphics
             return -0x1000000 | blu | grn | red;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         private static int ComputeIllumination(Vector3 toLight, Vector3 v0, Vector3 v1, Vector3 v2)
         {
             var nx = (v0.Y - v1.Y) * (v2.Z - v1.Z) - (v0.Z - v1.Z) * (v2.Y - v1.Y);

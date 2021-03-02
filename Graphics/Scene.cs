@@ -1,7 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using IrregularZ.Graphics;
-
-namespace IrregularZ.Scene
+﻿namespace IrregularZ.Graphics
 {
     public sealed class Scene
     {
@@ -9,7 +6,6 @@ namespace IrregularZ.Scene
 
         public Scene(Node root) => _root = root;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void Update(double seconds)
         {
             _root.TraverseDown(node =>
@@ -26,7 +22,6 @@ namespace IrregularZ.Scene
             });
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public void Render(IRenderer renderer, Frustum frustum)
         {
             renderer.Clipper = new Clipper(frustum);

@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace IrregularZ.Graphics
+﻿namespace IrregularZ.Graphics
 {
     public struct Frustum
     {
@@ -11,19 +9,17 @@ namespace IrregularZ.Graphics
         public Plane Top;
         public Plane Bottom;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public Frustum(Matrix4 view, Matrix4 proj)
         {
             var mat = proj * view;
-            Left = Plane.Create(-mat.M41 - mat.M11, -mat.M42 - mat.M12, -mat.M43 - mat.M13, mat.M44 + mat.M14);
-            Right = Plane.Create(-mat.M41 + mat.M11, -mat.M42 + mat.M12, -mat.M43 + mat.M13, mat.M44 - mat.M14);
-            Bottom = Plane.Create(-mat.M41 + mat.M21, -mat.M42 + mat.M22, -mat.M43 + mat.M23, mat.M44 - mat.M24);
-            Top = Plane.Create(-mat.M41 - mat.M21, -mat.M42 - mat.M22, -mat.M43 - mat.M23, mat.M44 + mat.M24);
             Near = Plane.Create(-mat.M41 - mat.M31, -mat.M42 - mat.M32, -mat.M43 - mat.M33, mat.M44 + mat.M34);
-            Far = Plane.Create(-mat.M41 + mat.M31, -mat.M42 + mat.M32, -mat.M43 + mat.M33, mat.M44 - mat.M34);
+            Far = Plane.Create(mat.M31 - mat.M41, mat.M32 - mat.M42, mat.M33 - mat.M43, mat.M44 - mat.M34);
+            Left = Plane.Create(-mat.M41 - mat.M11, -mat.M42 - mat.M12, -mat.M43 - mat.M13, mat.M44 + mat.M14);
+            Right = Plane.Create(mat.M11 - mat.M41, mat.M12 - mat.M42, mat.M13 - mat.M43, mat.M44 - mat.M14);
+            Top = Plane.Create(-mat.M41 - mat.M21, -mat.M42 - mat.M22, -mat.M43 - mat.M23, mat.M44 + mat.M24);
+            Bottom = Plane.Create(mat.M21 - mat.M41, mat.M22 - mat.M42, mat.M23 - mat.M43, mat.M44 - mat.M24);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public Containment Evaluate(Aabb aabb)
         {
             var vc0 = aabb.Evaluate(Near);

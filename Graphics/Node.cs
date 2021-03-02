@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-using IrregularZ.Graphics;
 
-namespace IrregularZ.Scene
+namespace IrregularZ.Graphics
 {
     public abstract class Node
     {
@@ -21,22 +19,22 @@ namespace IrregularZ.Scene
             WorldTransform = Matrix4.Identity;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public Containment ContainedBy(Frustum frustum) => frustum.Evaluate(Bounds);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization | MethodImplOptions.AggressiveInlining)]
         public void UpdateTransform() => WorldTransform = Parent.WorldTransform * LocalTransform;
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual void TraverseUp(Func<Node, bool> visitor) => visitor(this);
 
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         public virtual void TraverseDown(Func<Node, bool> visitor) => visitor(this);
 
         public abstract void UpdateBounds();
 
-        public virtual void Update(double seconds) { }
+        public virtual void Update(double seconds)
+        {
+        }
 
-        public virtual void Render(IRenderer renderer) { }
+        public virtual void Render(IRenderer renderer)
+        {
+        }
     }
 }
