@@ -1,8 +1,7 @@
 ﻿using System;
-using IrregularZ.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace IrregularZ
+namespace IrregularZ.Graphics
 {
     public class FirstPersonControl
     {

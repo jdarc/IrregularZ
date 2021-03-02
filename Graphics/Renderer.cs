@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Drawing;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace IrregularZ.Graphics
 {
@@ -18,6 +21,8 @@ namespace IrregularZ.Graphics
         }
 
         public Color Material { get; set; }
+
+        public bool Clipping { get; set; }
 
         public Clipper Clipper { get; set; }
 
@@ -51,65 +56,67 @@ namespace IrregularZ.Graphics
                 var i2 = indexBuffer[i + 2] * 3;
                 var v2 = WorldMatrix * new Vector3(vertexBuffer[i2 + 0], vertexBuffer[i2 + 1], vertexBuffer[i2 + 2]);
 
-                Render(matrix, v0, v1, v2, ComputeColor(127, ComputeIllumination(_lightDir, v0, v1, v2), Material));
+                var color = ComputeColor(127, ComputeIllumination(_lightDir, v0, v1, v2), Material);
+                Render(matrix, v0, v1, v2, color);
             }
         }
 
         private void Render(in Matrix4 matrix, in Vector3 v0, in Vector3 v1, in Vector3 v2, int color)
         {
-            var count = Clipper.Clip(v0, v1, v2);
-            if (count < 3) return;
-            var result = Clipper.Result;
-            if (count < 4)
-            {
-                ScanOrder(Project(matrix, result[0]), Project(matrix, result[1]), Project(matrix, result[2]), color);
-                return;
-            }
+            Clipper.Vertices[0] = v0;
+            Clipper.Vertices[1] = v1;
+            Clipper.Vertices[2] = v2;
 
-            var p0 = Project(matrix, result[0]);
-            var p2 = Project(matrix, result[1]);
+            var count = Clipping ? Clipper.Clip() : 3;
+            if (count < 3) return;
+            
+            var p0 = Vector3.Project(matrix, Clipper.Vertices[0]);
+            var p1 = Vector3.Project(matrix, Clipper.Vertices[1]);
+            var p2 = Vector3.Project(matrix, Clipper.Vertices[2]);
+            var gradients = new Gradients(p0, p1, p2);
+            ScanOrder(ref gradients, ref p0, ref p1, ref p2, color);
+
             var n = 2;
-            do
+            while (++n < count)
             {
-                var p1 = p2;
-                p2 = Project(matrix, result[n]);
-                ScanOrder(p0, p1, p2, color);
-            } while (++n < count);
+                p1 = p2;
+                p2 = Vector3.Project(matrix, Clipper.Vertices[n]);
+                ScanOrder(ref gradients, ref p0, ref p1, ref p2, color);
+            }
         }
 
-        private void ScanOrder(in Vector3 v0, in Vector3 v1, in Vector3 v2, int color)
+        private void ScanOrder(ref Gradients gradients, ref Vector3 v0, ref Vector3 v1, ref Vector3 v2, int color)
         {
-            var gradients = new Gradients(v0, v1, v2);
             if (v0.Y < v1.Y)
             {
-                if (v2.Y < v0.Y) Scan(gradients, v2, v0, v1, false, color);
-                else if (v1.Y < v2.Y) Scan(gradients, v0, v1, v2, false, color);
-                else Scan(gradients, v0, v2, v1, true, color);
+                if (v2.Y < v0.Y) Scan(ref gradients, ref v2, ref v0, ref v1, false, color);
+                else if (v1.Y < v2.Y) Scan(ref gradients, ref v0, ref v1, ref v2, false, color);
+                else Scan(ref gradients, ref v0, ref v2, ref v1, true, color);
             }
             else
             {
-                if (v2.Y < v1.Y) Scan(gradients, v2, v1, v0, true, color);
-                else if (v0.Y < v2.Y) Scan(gradients, v1, v0, v2, true, color);
-                else Scan(gradients, v1, v2, v0, false, color);
+                if (v2.Y < v1.Y) Scan(ref gradients, ref v2, ref v1, ref v0, true, color);
+                else if (v0.Y < v2.Y) Scan(ref gradients, ref v1, ref v0, ref v2, true, color);
+                else Scan(ref gradients, ref v1, ref v2, ref v0, false, color);
             }
         }
 
-        private void Scan(in Gradients gradients, in Vector3 v0, in Vector3 v1, in Vector3 v2, bool swap, int color)
+        private void Scan(ref Gradients gradients, ref Vector3 v0, ref Vector3 v1, ref Vector3 v2, bool swap, int color)
         {
             var edgeA = new Edge();
             if (edgeA.Configure(v0, v2, gradients) <= 0) return;
 
             var edgeB = new Edge();
             if (edgeB.Configure(v0, v1, gradients) > 0)
-                if (swap) Rasterize(gradients, ref edgeB, ref edgeA, edgeB, color);
-                else Rasterize(gradients, ref edgeA, ref edgeB, edgeB, color);
+                if (swap) Rasterize(ref gradients, ref edgeB, ref edgeA, ref edgeB, color);
+                else Rasterize(ref gradients, ref edgeA, ref edgeB, ref edgeB, color);
 
             if (edgeB.Configure(v1, v2, gradients) <= 0) return;
-            if (swap) Rasterize(gradients, ref edgeB, ref edgeA, edgeB, color);
-            else Rasterize(gradients, ref edgeA, ref edgeB, edgeB, color);
+            if (swap) Rasterize(ref gradients, ref edgeB, ref edgeA, ref edgeB, color);
+            else Rasterize(ref gradients, ref edgeA, ref edgeB, ref edgeB, color);
         }
 
-        private void Rasterize(in Gradients gradients, ref Edge left, ref Edge right, in Edge leader, int color)
+        private void Rasterize(ref Gradients gradients, ref Edge left, ref Edge right, ref Edge leader, int color)
         {
             var offset = leader.Y * _colorRaster.Width;
             var height = leader.Height;
@@ -141,15 +148,7 @@ namespace IrregularZ.Graphics
             }
         }
 
-        private static Vector3 Project(in Matrix4 m, in Vector3 v)
-        {
-            var x = m.M11 * v.X + m.M12 * v.Y + m.M13 * v.Z + m.M14;
-            var y = m.M21 * v.X + m.M22 * v.Y + m.M23 * v.Z + m.M24;
-            var z = m.M31 * v.X + m.M32 * v.Y + m.M33 * v.Z + m.M34;
-            var w = m.M41 * v.X + m.M42 * v.Y + m.M43 * v.Z + m.M44;
-            return new Vector3(x / w, y / w, z / w);
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private static int ComputeColor(int ka, int kd, Color diffuse)
         {
             var blu = Math.Clamp((ka * diffuse.B + kd * diffuse.B) >> 8, 0, 255) << 0x10;
@@ -158,6 +157,7 @@ namespace IrregularZ.Graphics
             return -0x1000000 | blu | grn | red;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         private static int ComputeIllumination(Vector3 toLight, Vector3 v0, Vector3 v1, Vector3 v2)
         {
             var nx = (v0.Y - v1.Y) * (v2.Z - v1.Z) - (v0.Z - v1.Z) * (v2.Y - v1.Y);

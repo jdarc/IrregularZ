@@ -8,6 +8,8 @@ namespace IrregularZ.Graphics
 
         Matrix4 WorldMatrix { get; set; }
 
+        bool Clipping { get; set; }
+
         Clipper Clipper { get; set; }
 
         void Render(float[] vertexBuffer, int[] indexBuffer);

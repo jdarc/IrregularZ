@@ -14,7 +14,7 @@ namespace IrregularZ.Graphics
         }
 
         public float Dot(float x, float y, float z) => Normal.X * x + Normal.Y * y + Normal.Z * z - Distance;
-
+        
         public static Plane Create(float x, float y, float z, float d)
         {
             var invLen = 1F / MathF.Sqrt(x * x + y * y + z * z);

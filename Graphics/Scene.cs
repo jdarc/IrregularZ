@@ -29,7 +29,7 @@
             {
                 var containment = node.ContainedBy(frustum);
                 if (containment == Containment.Outside) return false;
-                renderer.Clipper.Enabled = containment == Containment.Partial;
+                renderer.Clipping = containment == Containment.Partial;
                 node.Render(renderer);
                 return true;
             });

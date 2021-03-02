@@ -8,12 +8,12 @@
         private readonly float _fov;
         private readonly float _near;
 
-        public Camera(float fov, int width, int height, float near, float far)
+        public Camera(float fov, float aspectRatio, float near, float far)
         {
             _fov = fov;
             _near = near;
             _far = far >= near ? far : near;
-            _aspectRatio = width / (float) height;
+            _aspectRatio = aspectRatio;
         }
 
         public Vector3 Position { get; private set; } = new Vector3(0, 0, 1);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace IrregularZ.Graphics
 {
@@ -49,12 +50,23 @@ namespace IrregularZ.Graphics
             return new Vector3(x, y, z);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
         public static Vector3 operator *(in Matrix4 matrix, in Vector3 position)
         {
             var x = matrix.M11 * position.X + matrix.M12 * position.Y + matrix.M13 * position.Z + matrix.M14;
             var y = matrix.M21 * position.X + matrix.M22 * position.Y + matrix.M23 * position.Z + matrix.M24;
             var z = matrix.M31 * position.X + matrix.M32 * position.Y + matrix.M33 * position.Z + matrix.M34;
             return new Vector3(x, y, z);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+        public static Vector3 Project(in Matrix4 matrix, in Vector3 position)
+        {
+            var x = matrix.M11 * position.X + matrix.M12 * position.Y + matrix.M13 * position.Z + matrix.M14;
+            var y = matrix.M21 * position.X + matrix.M22 * position.Y + matrix.M23 * position.Z + matrix.M24;
+            var z = matrix.M31 * position.X + matrix.M32 * position.Y + matrix.M33 * position.Z + matrix.M34;
+            var w = matrix.M41 * position.X + matrix.M42 * position.Y + matrix.M43 * position.Z + matrix.M44;
+            return new Vector3(x / w, y / w, z / w);
         }
 
         public static float Dot(in Vector3 a, in Vector3 b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z;

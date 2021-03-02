@@ -1,6 +1,5 @@
 ﻿using System;
 using IrregularZ.Graphics;
-using IrregularZ.Import;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -25,8 +24,8 @@ namespace IrregularZ
 
         public Game()
         {
-            var screenWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            var screenHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            const int screenWidth = 960;
+            const int screenHeight = 540;
             IsMouseVisible = false;
             _graphics = new GraphicsDeviceManager(this)
             {
@@ -54,12 +53,8 @@ namespace IrregularZ
             _renderer = new Renderer(_colorRaster, _depthRaster);
             _shadowMapper = new ShadowMapper(256);
 
-            _camera = new Camera(
-                (float) Math.PI / 4,
-                _graphics.PreferredBackBufferWidth,
-                _graphics.PreferredBackBufferHeight,
-                1, 500
-            );
+            var aspectRatio = _graphics.PreferredBackBufferWidth / (float)_graphics.PreferredBackBufferHeight;
+            _camera = new Camera((float) Math.PI / 4, aspectRatio, 1, 500);
             _camera.MoveTo(-5, 8, -22);
             _camera.LookAt(0, 0, 0);
 
@@ -186,12 +181,13 @@ namespace IrregularZ
 
         protected override void Draw(GameTime gameTime)
         {
+            _renderer.Clear(0x5599FF);
             _renderer.ViewMatrix = _camera.ViewMatrix;
             _renderer.ProjectionMatrix = _camera.ProjectionMatrix;
-            _renderer.Clear(0x5599FF);
             _scene.Render(_renderer, new Frustum(_camera.ViewMatrix, _camera.ProjectionMatrix));
 
-            _shadowMapper.Generate(_depthRaster, _renderer.ViewportMatrix * _renderer.ProjectionMatrix * _renderer.ViewMatrix);
+            var matrix = _renderer.ViewportMatrix * _renderer.ProjectionMatrix * _renderer.ViewMatrix;
+            _shadowMapper.Generate(matrix, _depthRaster);
             _shadowMapper.Render(_scene, _colorRaster);
 
             _surface.SetData(_colorRaster.Data);

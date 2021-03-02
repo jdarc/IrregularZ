@@ -2,9 +2,8 @@
 using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
-using IrregularZ.Graphics;
 
-namespace IrregularZ.Import
+namespace IrregularZ.Graphics
 {
     public static class WavefrontLoader
     {
